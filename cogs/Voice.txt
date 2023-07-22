@@ -1,0 +1,52 @@
+import time
+import traceback
+import requests
+import disnake
+from PIL import Image, ImageFont, ImageDraw, ImageChops
+from disnake.ext import commands, tasks
+import io
+
+from disnake import TextInputStyle
+from io import BytesIO
+import pymongo
+import time
+client = pymongo.MongoClient(
+    "mongodb+srv://klever:zdwrdjmv@cluster0.wbx8zhg.mongodb.net/?retryWrites=true&w=majority")
+db = client["Yakumi"]
+coll = db["Users"]
+
+class Mes_Cog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.voice_check.start()
+        print('Commands {} is loaded'.format(self.__class__.__name__))
+
+    def get_guild_voice_lenght(self, guild):
+        count = 0
+        for chan in guild.voice_channels:
+            count += len(chan.members)
+        return count
+
+    def get_guild_voice_lenght1(self, guild):
+        counts = 0
+        for chan in guild.stage_channels:
+            counts += len(chan.members)
+        return counts
+    @tasks.loop(seconds=1)
+    async def voice_check(self):
+        for guild in self.bot.guilds:
+            if guild.id == 1045060791591776287:
+                for channel in guild.voice_channels:
+                    for member in channel.members:
+                        if member.voice.channel.category.id == 1045060792929759306:
+                            post = {
+                                "user_id": f"{member.id}",
+                                "proxodka": 0.0,
+
+                            }
+                            if coll.count_documents({"user_id": f"{member.id}"}) == 0:
+                                coll.insert_one(post)
+                            coll.update_one({"user_id": f"{member.id}"}, {
+                                            "$inc": {"proxodka": 0.5}})
+def setup(client):
+    client.add_cog(Mes_Cog(client))
